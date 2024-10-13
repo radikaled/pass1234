@@ -1,50 +1,70 @@
 import os
-from hashlib import pbkdf2_hmac
-from cryptography.hazmat.primitives import hashes
+
+from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.exceptions import InvalidKey
 
-# 32 bytes - 256 bits
-def generate_master_key(
-        salt: bytes, 
-        iterations: int=600000,
-        length: int=32
-        ) -> bytes:
-    
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=length,  # bytes
-        salt=salt,
-        iterations=iterations
-        )
+class KeyController:
+    def __init__(self, email: str, password: str):
+        self.iterations = 600000
+        self.length = 32  # 256 bits = 32 bytes
+        self._email = email
+        self._password = password
+        self.master_key = self._generate_master_key()
+        self.stretched_master_key = self._generate_stretched_master_key()
+        self.master_password_hash = self._generate_master_password_hash()
 
-generate_master_key(b'nealerickim@gmail.com')
+    def _generate_master_key(self) -> bytes:
+        
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=self.length,  # 256 bits = 32 bytes
+            salt=self._email.encode(),
+            iterations=self.iterations
+            )
+        
+        master_key = kdf.derive(self._password.encode())
 
-# Salts should be randomly generated
+        return master_key
 
-# salt = os.urandom(16)
-salt = b'nealerickim@gmail.com'
+    def _generate_stretched_master_key(self) -> bytes:
 
-dk = pbkdf2_hmac('sha256', b'password', salt, 600_000)
+        hkdf = HKDF(
+            algorithm=hashes.SHA256(),
+            length=64,  # 512 bits = 64 bytes
+            salt=None,
+            info=None
+            )
+        
+        stretched_master_key = hkdf.derive(self.master_key)
 
-# derive
-kdf = PBKDF2HMAC(
-    algorithm=hashes.SHA256(),
-    length=32,
-    salt=salt,
-    iterations=600000,
-)
-key = kdf.derive(b"my great password")
+        return stretched_master_key
 
-# verify
-kdf = PBKDF2HMAC(
-    algorithm=hashes.SHA256(),
-    length=32,
-    salt=salt,
-    iterations=600000,
-)
+    def _generate_master_password_hash(self) -> bytes:
+            
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=self.length,
+            salt=self._password.encode(),
+            iterations=self.iterations
+            )
+        
+        master_password_hash = kdf.derive(self.master_key)
 
-try:
-    kdf.verify(b"my great password", key)
-    print(f"key matches")
-except:
-    print(f"key doesn't match")
+        return master_password_hash
+
+    def valid_master_password_hash(self, hash: str) -> bool:
+        
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=self.length,
+            salt=self._password.encode(),
+            iterations=self.iterations
+            )
+        
+        try:
+            kdf.verify(self.master_key, bytes.fromhex(hash))
+            return True
+        except InvalidKey:
+            return False

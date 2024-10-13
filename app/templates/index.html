@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <span class="title"><h1>{% block title %} The Home Page of FlaskApp {% endblock %}</h1></span>
+    <span class="title"><h1>{% block title %} Pass1234 {% endblock %}</h1></span>
     <div class="content">
-        <h2>This is the main Flask blueprint</h2>
+        <h2><a href="{{ url_for('main.register') }}">Register</a></h2>
+        <h2><a href="{{ url_for('main.login') }}">Login</a></h2>
     </div>
 {% endblock %}
