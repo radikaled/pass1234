@@ -1,56 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %} {% endblock %} - FlaskApp</title>
-    <style>
-        h2 {
-            width: 100%;
-        }
-
-        .title {
-            margin: 5px;
-            width: 100%;
-        }
-
-        .content {
-            margin: 5px;
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-
-        .post {
-            flex: 20%;
-            padding: 10px;
-            margin: 5px;
-            background-color: #f3f3f3;
-            inline-size: 100%;
-        }
-
-        .title a {
-            color: #00a36f;
-            text-decoration: none;
-        }
-
-        nav a {
-            color: #d64161;
-            font-size: 3em;
-            margin-left: 50px;
-            text-decoration: none;
-        }
-
-    </style>
-</head>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pass1234</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bulma/css/bulma.min.css') }}">
+  </head>
 <body>
-    <nav>
-        <a href="{{ url_for('main.index') }}">Home</a>
-        <a href="#">My Vault</a>
-    </nav>
-    <hr>
-    <div class="content">
-        {% block content %} {% endblock %}
-    </div>
+    <section class="hero is-info is-fullheight">
+        <div class="hero-head">
+            <nav class="navbar">
+                <div class="container">
+                    <div id="navbarMenuHeroA" class="navbar-menu">
+                        <div class="navbar-end">
+                            <a href="{{ url_for('main.index') }}" class="navbar-item">
+                                Home
+                            </a>
+                            <a href="{{ url_for('main.login') }}" class="navbar-item">
+                                Login
+                            </a>
+                            <a href="{{ url_for('main.register') }}" class="navbar-item">
+                                Register 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <img style="width:200px;height:auto;" src="{{ url_for('static', filename='img/pass1234.png') }}" alt="Logo" />
+               {% block content %}
+               {% endblock %}
+            </div>
+        </div>
+    </section>
 </body>
 </html>

@@ -19,7 +19,7 @@ class KeyController:
         
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
-            length=self.length,  # 256 bits = 32 bytes
+            length=self.length,
             salt=self._email.encode(),
             iterations=self.iterations
             )

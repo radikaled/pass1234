@@ -1,15 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create User</title>
-</head>
-<body>
-    <h1>Create User</h1>
-    <form method="POST">
-        {{ form.csrf_token }}
-        {{ form.email.label }} {{ form.email }}<br>
-        {{ form.password.label }} {{ form.password }}<br>
-        <input type="submit" value="Register">
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="column is-4 is-offset-4">
+    <h3 class="title">Create Account</h3>
+    <div class="box">
+        <form method="POST">
+            {{ form.csrf_token }}
+            <div class="field">
+                <div class="control">
+                    {{ form.email(
+                        class_="input is-large",
+                        type="email",
+                        placeholder="Email",
+                        autofocus=""
+                        ) }}
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    {{ form.password(
+                        class_="input is-large",
+                        placeholder="Password",
+                        type="password"
+                        ) }}
+                </div>
+            </div>
+            <button class="button is-block is-info is-large is-fullwidth" value="Create">Create</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,16 +1,10 @@
 from flask import render_template, request, redirect, url_for, flash, session
+
 from app.main import bp
 from app.util.secure import KeyController
 from app.models.user import User
 from app.extensions import db
-
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
-
-class UserForm(FlaskForm):
-    email = StringField('E-Mail', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+from app.main.forms import UserForm
 
 @bp.route('/')
 def index():
