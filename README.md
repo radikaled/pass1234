@@ -34,6 +34,10 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+Export `SECRET_KEY` environment variable
+```bash
+export SECRET_KEY=`python -c "import secrets; print(secrets.token_hex(24))"`
+```
 Deploy the instance
 ```bash
 gunicorn -w 4 'app:create_app()'
