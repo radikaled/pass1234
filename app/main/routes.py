@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import render_template, redirect, url_for, flash
+from sqlalchemy.exc import NoResultFound
 
 from app.main import bp
 from app.util.secure import KeyController
@@ -21,9 +22,9 @@ def register():
         kc = KeyController(email, password)
         
         new_user = User(
-            email=email,
-            passwordhash=kc.master_password_hash.hex()
-            )
+            email = email,
+            passwordhash = kc.master_password_hash.hex()
+        )
         db.session.add(new_user)
         db.session.commit()
 
@@ -38,7 +39,14 @@ def login():
         password = form.password.data
 
         # Check to see if the user already exists
-        user = User.query.filter_by(email=email).first()
+        try:
+            user = db.session.execute(
+                db.select(User).where(User.email == email)
+            ).scalar_one()
+        except NoResultFound:
+            # Redirect to registration page
+            return redirect(url_for('main.register'))
+        
         kc = KeyController(email, password)
 
         if user and kc.valid_master_password_hash(user.passwordhash):
