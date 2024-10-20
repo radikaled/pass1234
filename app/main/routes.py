@@ -1,9 +1,12 @@
+import base64
+
 from flask import render_template, redirect, url_for, flash
 from sqlalchemy.exc import NoResultFound
 
 from app.main import bp
 from app.util.secure import KeyController
 from app.models.user import User
+from app.models.vault import Vault
 from app.extensions import db
 from app.main.forms import UserForm
 
@@ -20,12 +23,31 @@ def register():
         password = form.password.data
 
         kc = KeyController(email, password)
-        
+      
+        # Begin creating the new user
         new_user = User(
-            email = email,
-            passwordhash = kc.master_password_hash.hex()
+            email=email,
+            master_password_hash=(
+                base64.b64encode(kc.master_password_hash).decode('utf-8')
+            )
         )
         db.session.add(new_user)
+        db.session.flush()  # Push pending changes without committing
+
+        # Generate the user's protected symmetric key
+        protected_key, iv = kc.generate_protected_symmetric_key()
+        b64_protected_key = base64.b64encode(protected_key).decode('utf-8')
+        b64_iv = base64.b64encode(iv).decode('utf-8')
+
+        # Create the user's vault instance
+        new_vault = Vault(
+            user_id=new_user.id,
+            protected_key=b64_protected_key,
+            iv=b64_iv
+        )
+        db.session.add(new_vault)
+        
+        # New user creation complete
         db.session.commit()
 
         return redirect(url_for('main.success'))
@@ -49,7 +71,9 @@ def login():
         
         kc = KeyController(email, password)
 
-        if user and kc.valid_master_password_hash(user.passwordhash):
+        if user and kc.verify_master_password_hash(
+            base64.b64decode(user.password_hash)
+        ):
             flash('Logged in successfully!', 'success')
             return redirect(url_for('main.login'))
         else:
