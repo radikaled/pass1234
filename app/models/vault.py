@@ -11,8 +11,9 @@ from app.extensions import db
 class Vault(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    protected_key: Mapped[str] = mapped_column(unique=True)
     iv: Mapped[str] = mapped_column(unique=True)
+    protected_key: Mapped[str] = mapped_column(unique=True)
+    hmac_signature: Mapped[str] = mapped_column(unique=True)
     date_created: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()   # Let sqlite set the current timestamp
