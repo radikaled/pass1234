@@ -1,17 +1,18 @@
-from typing import List
 from datetime import datetime
 
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.extensions import db
 
-class User(db.Model):
+class Vault(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    master_password_hash: Mapped[str] = mapped_column(unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    protected_key: Mapped[str] = mapped_column(unique=True)
+    iv: Mapped[str] = mapped_column(unique=True)
     date_created: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()   # Let sqlite set the current timestamp
@@ -21,7 +22,7 @@ class User(db.Model):
         server_default=func.now(),
         onupdate=func.now()
     )
-    vaults: Mapped[List["Vault"]] = relationship(back_populates="user")
+    user: Mapped["User"] = relationship(back_populates="vaults")
 
     def __repr__(self):
-        return f'<User "{self.email}">'
+        return f'<Vault "{self.id}">'
