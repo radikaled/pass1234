@@ -1,5 +1,4 @@
 import os
-import base64
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
@@ -13,8 +12,8 @@ class KeyController:
         self.length = 32  # 256-bits
         self._email = email
         self._password = password
-        self.master_key = self._generate_master_key()
-        self.stretched_master_key = self._generate_stretched_master_key()
+        self._master_key = self._generate_master_key()
+        self._stretched_master_key = self._generate_stretched_master_key()
         self.master_password_hash = self._generate_master_password_hash()
 
     # Generate the master key
@@ -41,10 +40,10 @@ class KeyController:
         hkdf = HKDFExpand(
             algorithm=hashes.SHA256(),
             length=64,  # 512-bits
-            info=b'encryption_key'  #  Additional context about the key
+            info=b'encryption_key'  # Additional context about the key
         )
         
-        stretched_master_key = hkdf.derive(self.master_key)
+        stretched_master_key = hkdf.derive(self._master_key)
 
         return stretched_master_key
 
@@ -59,7 +58,7 @@ class KeyController:
             iterations=self.iterations
         )
         
-        master_password_hash = kdf.derive(self.master_key)
+        master_password_hash = kdf.derive(self._master_key)
 
         return master_password_hash
 
@@ -73,13 +72,13 @@ class KeyController:
         )
         
         try:
-            kdf.verify(self.master_key, hash)
+            kdf.verify(self._master_key, hash)
             return True
         except InvalidKey:
             return False
         
-    def generate_encrypted_symmetric_key(self) -> tuple[str, str]:
-        encryption_key = self.master_key[:32] # Use first 256-bits
+    def generate_protected_symmetric_key(self) -> tuple[bytes, bytes]:
+        encryption_key = self._master_key[:32]  # Use first 256-bits
         
         # In the real world one would use a 
         # Cryptographically Secure Pseudorandom Number Generator (CSPRNG)
@@ -93,8 +92,4 @@ class KeyController:
         encryptor = cipher.encryptor()
         protected_key = encryptor.update(symmetric_key) + encryptor.finalize()
         
-        # Encode the protected key and iv with base64
-        b64_protected_key = base64.b64encode(protected_key).decode('utf-8')
-        b64_iv = base64.b64encode(iv).decode('utf-8')
-        
-        return b64_protected_key, b64_iv
+        return protected_key, iv
