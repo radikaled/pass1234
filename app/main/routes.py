@@ -10,6 +10,12 @@ from app.models.vault import Vault
 from app.extensions import db
 from app.main.forms import UserForm
 
+# Lambda shorthand for base64 encoding
+b64encode_str = lambda data: base64.b64encode(data).decode('utf-8')
+
+# Lambda shorthand for base64 decoding
+b64decode_str = lambda data: base64.b64decode(data)
+
 @bp.route('/')
 def index():
     return render_template('index.html')
@@ -23,27 +29,24 @@ def register():
         password = form.password.data
 
         kc = KeyController(email, password)
-      
+
         # Begin creating the new user
         new_user = User(
             email=email,
-            master_password_hash=(
-                base64.b64encode(kc.master_password_hash).decode('utf-8')
-            )
+            master_password_hash=(b64encode_str(kc.master_password_hash))
         )
         db.session.add(new_user)
         db.session.flush()  # Push pending changes without committing
 
         # Generate the user's protected symmetric key
-        protected_key, iv = kc.generate_protected_symmetric_key()
-        b64_protected_key = base64.b64encode(protected_key).decode('utf-8')
-        b64_iv = base64.b64encode(iv).decode('utf-8')
+        key_artifacts = kc.generate_protected_symmetric_key()
 
         # Create the user's vault instance
         new_vault = Vault(
             user_id=new_user.id,
-            protected_key=b64_protected_key,
-            iv=b64_iv
+            iv=b64encode_str(key_artifacts.iv),
+            protected_key=b64encode_str(key_artifacts.protected_key),
+            hmac_signature=b64encode_str(key_artifacts.hmac_signature)
         )
         db.session.add(new_vault)
         
@@ -72,7 +75,7 @@ def login():
         kc = KeyController(email, password)
 
         if user and kc.verify_master_password_hash(
-            base64.b64decode(user.password_hash)
+            b64decode_str(user.master_password_hash)
         ):
             flash('Logged in successfully!', 'success')
             return redirect(url_for('main.login'))
