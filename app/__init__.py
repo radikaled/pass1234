@@ -2,6 +2,8 @@ from flask import Flask
 
 from config import Config
 from app.extensions import db
+from app.extensions import lm
+from app.models.user import User
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -9,6 +11,9 @@ def create_app(config_class=Config):
 
     # Initialize Flask extensions here
     db.init_app(app)    # Database
+
+    lm.login_view = 'main.login'
+    lm.init_app(app)
 
     # Register blueprints here
     from app.main import bp as main_bp
@@ -19,8 +24,8 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
 
-    @app.route('/test/')
-    def test_page():
-        return '<h1>Testing the Flask Application Factory Pattern</h1>'
+    @lm.user_loader
+    def load_user(user_id):
+        return db.session.get(User, user_id)
 
     return app
