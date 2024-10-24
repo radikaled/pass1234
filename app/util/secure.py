@@ -1,11 +1,14 @@
 import os
 
 from typing import NamedTuple
+from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.exceptions import InvalidKey
+from cryptography.exceptions import InvalidKey, InvalidSignature
+
+from app.util.cipher_utils import decrypt, encrypt, verify_hmac
 
 class KeyController:
     # Keep things nice and neat while preserving type hints
@@ -14,14 +17,25 @@ class KeyController:
         protected_key: bytes
         hmac_signature: bytes
     
-    def __init__(self, email: str, password: str):
+    def __init__(
+        self, 
+        email: str, 
+        password: str
+    ):
         self.iterations = 600000
         self.length = 32  # 256-bits
+        
         self._email = email
         self._password = password
+        
         self._master_key = self._generate_master_key()
         self._stretched_master_key = self._generate_stretched_master_key()
-        self.master_password_hash = self._generate_master_password_hash()
+        self._master_password_hash = self._generate_master_password_hash()
+
+        # Derived from the stretched master key
+        # Split keys for AES encryption and HMAC
+        self._derived_aes_key = self._stretched_master_key[:32]
+        self._derived_hmac_key = self._stretched_master_key[32:]
 
     # Generate the master key
     # Use the email address for salt
@@ -83,10 +97,13 @@ class KeyController:
             return True
         except InvalidKey:
             return False
-        
+
+    def get_master_password_hash(self) -> bytes:
+        return self._master_password_hash
+    
     def generate_protected_symmetric_key(self) -> ProtectedKeyArtifacts:
         encryption_key = self._stretched_master_key[:32]  # Use first 256-bits
-        hmac_key = self._stretched_master_key[:32]  # Use last 256-bits
+        hmac_key = self._stretched_master_key[32:]  # Use last 256-bits
         
         # In the real world one would use a 
         # Cryptographically Secure Pseudorandom Number Generator (CSPRNG)
@@ -95,6 +112,12 @@ class KeyController:
         symmetric_key = os.urandom(64) # 512-bits
         iv = os.urandom(16) # 128-bits
 
+        # Padding is always required in the case of AES-CBC
+        # Even if the number of bytes is a multiple of the
+        # AES block size (16 bytes)
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(symmetric_key) + padder.finalize()
+
         # AES-256-CBC (Cipher Block Chaining)
         # "encrypt-then-MAC"
         cipher_aes_cbc = Cipher(
@@ -102,10 +125,11 @@ class KeyController:
             modes.CBC(iv)
         )
         encryptor = cipher_aes_cbc.encryptor()
+
         # Encryption is a streaming operation
         # always make sure to capture the value of update()!
         # finalize() alone won't return the correct encrypted result!
-        protected_key = encryptor.update(symmetric_key) + encryptor.finalize()
+        protected_key = encryptor.update(padded_data) + encryptor.finalize()
         
         # Generate hash-based message authentication codes (HMAC)
         # Can be thought of as the "signature" to ensure integrity of the
@@ -122,4 +146,16 @@ class KeyController:
             hmac_signature=hmac_signature
         )
         
-        return key_artifacts 
+        return key_artifacts
+    
+    def unlock_vault(
+        self,
+        iv: bytes,
+        protected_key: bytes,
+        hmac_signature: bytes
+    ) -> bytes:
+        hmac_data = iv + protected_key
+        verify_hmac(self._derived_hmac_key, hmac_data, hmac_signature)
+        decrypted_key = decrypt(iv, protected_key, self._derived_aes_key)
+        
+        return decrypted_key
