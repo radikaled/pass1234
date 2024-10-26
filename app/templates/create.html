@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="column is-4 is-offset-4">
+    <h3 class="title">Add New Credential</h3>
+    <div class="box">
+        <form method="POST">
+            {{ form.csrf_token }}
+            <div class="field">
+                <div class="control">
+                    {{ form.name(
+                        class_="input is-large",
+                        type="text",
+                        placeholder="Name",
+                        autofocus=""
+                        ) }}
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    {{ form.username(
+                        class_="input is-large",
+                        type="text",
+                        placeholder="Username",
+                        autofocus=""
+                        ) }}
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    {{ form.password(
+                        class_="input is-large",
+                        placeholder="Password",
+                        type="password"
+                        ) }}
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    {{ form.website(
+                        class_="input is-large",
+                        type="text",
+                        placeholder="Website",
+                        autofocus=""
+                        ) }}
+                </div>
+            <button class="button is-block is-info is-large is-fullwidth" value="Create">Create</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
