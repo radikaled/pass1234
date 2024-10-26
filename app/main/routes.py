@@ -1,10 +1,12 @@
 import base64
 
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, session
+from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import NoResultFound
 
 from app.main import bp
 from app.util.secure import KeyController
+from app.util.cipher_utils import decrypt, encrypt
 from app.models.user import User
 from app.models.vault import Vault
 from app.extensions import db
@@ -33,7 +35,7 @@ def register():
         # Begin creating the new user
         new_user = User(
             email=email,
-            master_password_hash=(b64encode_str(kc.master_password_hash))
+            master_password_hash=(b64encode_str(kc.get_master_password_hash()))
         )
         db.session.add(new_user)
         db.session.flush()  # Push pending changes without committing
@@ -72,18 +74,44 @@ def login():
             # Redirect to registration page
             return redirect(url_for('main.register'))
         
+        # User's first vault
+        vault = user.vaults[0]
+        
         kc = KeyController(email, password)
 
         if user and kc.verify_master_password_hash(
             b64decode_str(user.master_password_hash)
         ):
-            flash('Logged in successfully!', 'success')
-            return redirect(url_for('main.login'))
+            
+            protected_key = kc.unlock_vault(
+                b64decode_str(vault.iv),
+                b64decode_str(vault.protected_key),
+                b64decode_str(vault.hmac_signature)
+            )
+            
+            session['_aes_key'] = protected_key[:32]
+            session['_hmac_key'] = protected_key[32:]
+            
+            # Login
+            login_user(user)
+            
+            return redirect(url_for('main.profile'))
         else:
             flash('Invalid username or password.', 'danger')
             return redirect(url_for('main.login'))
     return render_template('login.html', form=form)
 
+@bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.index'))
+
+@bp.route('/profile')
+@login_required
+def profile():
+    print(f'{session}')
+    return render_template('profile.html', name=current_user.email)
 
 @bp.route('/success')
 def success():
