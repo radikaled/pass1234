@@ -5,17 +5,24 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.exceptions import InvalidSignature
 
+def generate_hmac(hmac_key: bytes, data: bytes) -> bytes:
+    hmac_signer = hmac.HMAC(hmac_key, hashes.SHA256())
+    hmac_signer.update(data)
+    hmac_signature = hmac_signer.finalize()
+    
+    return hmac_signature
+
 def verify_hmac(hmac_key: bytes, data: bytes, hmac_signature: bytes) -> bool:
-        hmac_key = hmac_key
+    hmac_key = hmac_key
         
-        hmac_signer = hmac.HMAC(hmac_key, hashes.SHA256())
-        hmac_signer.update(data)
+    hmac_signer = hmac.HMAC(hmac_key, hashes.SHA256())
+    hmac_signer.update(data)
         
-        try:
-            hmac_signer.verify(hmac_signature)
-            return True
-        except InvalidSignature:
-            return False
+    try:
+        hmac_signer.verify(hmac_signature)
+        return True
+    except InvalidSignature:
+        return False
 
 def encrypt(unencrypted_data: bytes, aes_key: bytes) -> tuple['bytes', 'bytes']:
     iv = os.urandom(16) # 128-bits
