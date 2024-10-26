@@ -24,6 +24,7 @@ class Vault(db.Model):
         onupdate=func.now()
     )
     user: Mapped["User"] = relationship(back_populates="vaults")
+    credentials: Mapped["Credential"] = relationship(back_populates="vault")
 
     def __repr__(self):
         return f'<Vault "{self.id}">'
