@@ -19,6 +19,9 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
+    from app.vault import bp as vault_bp
+    app.register_blueprint(vault_bp)
+
     # Create tables that do not already exist in the database
     # Effectively database init
     with app.app_context():
