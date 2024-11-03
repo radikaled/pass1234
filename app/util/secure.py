@@ -6,15 +6,23 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidKey, InvalidSignature
 
-from app.util.cipher_utils import decrypt, encrypt, verify_hmac
+from app.util.cipher_utils import decrypt, encrypt, generate_hmac, verify_hmac
 
 class KeyController:
     # Keep things nice and neat while preserving type hints
     class ProtectedKeyArtifacts(NamedTuple):
         iv: bytes
         protected_key: bytes
+        hmac_signature: bytes
+        
+    class RSAKeyArtifacts(NamedTuple):
+        iv: bytes
+        rsa_private_key_pem: bytes
+        rsa_public_key_pem: bytes
         hmac_signature: bytes
     
     def __init__(
@@ -143,6 +151,51 @@ class KeyController:
         key_artifacts = self.ProtectedKeyArtifacts(
             iv=iv,
             protected_key=protected_key,
+            hmac_signature=hmac_signature
+        )
+        
+        return key_artifacts
+
+    def generate_asymmetric_keypair(self) -> RSAKeyArtifacts:
+        # Generate the RSA private key
+        rsa_private_key = rsa.generate_private_key(
+            public_exponent=65537,  # Sane default
+            key_size=4096,  # Bits
+        )
+
+        # Derive the RSA public key
+        rsa_public_key = rsa_private_key.public_key()
+
+        # Serialize the RSA private key
+        rsa_private_key_pem = rsa_private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption
+        )
+        
+        # Serialize the RSA public key
+        # No need to encrypt the RSA public key
+        rsa_public_key_pem = rsa_public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        
+        # Encrypt the RSA private key with the symmetric key
+        iv, encrypted_rsa_private_key = encrypt(
+            rsa_private_key_pem,
+            self._derived_aes_key
+        )
+        
+        # Generate the HMAC
+        hmac_signature = generate_hmac(
+            self._derived_hmac_key,
+            iv + encrypted_rsa_private_key
+        )
+        
+        key_artifacts = self.RSAKeyArtifacts(
+            iv=iv,
+            rsa_private_key_pem=encrypted_rsa_private_key,
+            rsa_public_key_pem=rsa_public_key_pem,
             hmac_signature=hmac_signature
         )
         
