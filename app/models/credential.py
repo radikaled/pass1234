@@ -1,3 +1,4 @@
+from typing import List
 from datetime import datetime
 
 from sqlalchemy import DateTime
@@ -27,6 +28,9 @@ class Credential(db.Model):
         onupdate=func.now()
     )
     vault: Mapped["Vault"] = relationship(back_populates="credentials")
+    shared_credentials: Mapped[List["SharedCredential"]] = relationship(
+        back_populates="credential"
+    )
 
     def __repr__(self):
         return f'<Credential "{self.id}">'
