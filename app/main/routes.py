@@ -43,12 +43,21 @@ def register():
         # Generate the user's protected symmetric key
         key_artifacts = kc.generate_protected_symmetric_key()
 
+        # Generate the user's RSA public-key pair
+        rsa_artifacts = kc.generate_asymmetric_keypair()
+
         # Create the user's vault instance
         new_vault = Vault(
             user_id=new_user.id,
             iv=b64encode_str(key_artifacts.iv),
             protected_key=b64encode_str(key_artifacts.protected_key),
-            hmac_signature=b64encode_str(key_artifacts.hmac_signature)
+            hmac_signature=b64encode_str(key_artifacts.hmac_signature),
+            rsa_private_key_iv=b64encode_str(rsa_artifacts.iv),
+            rsa_private_key=b64encode_str(rsa_artifacts.rsa_private_key_pem),
+            rsa_public_key=b64encode_str(rsa_artifacts.rsa_public_key_pem),
+            rsa_private_key_hmac_signature=b64encode_str(
+                rsa_artifacts.hmac_signature
+            )
         )
         db.session.add(new_vault)
         
