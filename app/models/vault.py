@@ -1,3 +1,4 @@
+from typing import List
 from datetime import datetime
 
 from sqlalchemy import DateTime
@@ -7,6 +8,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.extensions import db
+from app.models.user import User
+from app.models.credential import Credential
 
 class Vault(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -28,7 +31,7 @@ class Vault(db.Model):
         onupdate=func.now()
     )
     user: Mapped["User"] = relationship(back_populates="vaults")
-    credentials: Mapped["Credential"] = relationship(back_populates="vault")
+    credentials: Mapped[List["Credential"]] = relationship(back_populates="vault")
 
     def __repr__(self):
         return f'<Vault "{self.id}">'
