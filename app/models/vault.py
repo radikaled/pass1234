@@ -14,6 +14,10 @@ class Vault(db.Model):
     iv: Mapped[str] = mapped_column(unique=True)
     protected_key: Mapped[str] = mapped_column(unique=True)
     hmac_signature: Mapped[str] = mapped_column(unique=True)
+    rsa_private_key_iv: Mapped[str] = mapped_column(unique=True)
+    rsa_private_key: Mapped[str] = mapped_column(unique=True)
+    rsa_public_key: Mapped[str] = mapped_column(unique=True)
+    rsa_private_key_hmac_signature: Mapped[str] = mapped_column(unique=True)
     date_created: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()   # Let sqlite set the current timestamp
