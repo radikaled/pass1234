@@ -7,6 +7,7 @@ from sqlalchemy.exc import NoResultFound
 from app.vault import bp
 from app.util.cipher_utils import decrypt, encrypt, generate_hmac
 from app.models.credential import Credential
+from app.models.sharedcredential import SharedCredential
 from app.extensions import db
 from app.vault.forms import CredentialCreateForm
 from app.vault.forms import CredentialUpdateForm
@@ -20,15 +21,15 @@ b64decode_str = lambda data: base64.b64decode(data)
 @bp.route('/vault')
 @login_required
 def index():
-    # For some reason this doesn't work right now but will check later
-    # credentials = current_user.vaults[0].credentials
+    # Load credential records 
+    credentials = current_user.vaults[0].credentials
     
     # For now this works OK
-    credentials = db.session.execute(
-        db.select(Credential).where(
-            Credential.vault_id == current_user.vaults[0].id
-        )
-    ).scalars().all()
+    # credentials = db.session.execute(
+    #    db.select(Credential).where(
+    #        Credential.vault_id == current_user.vaults[0].id
+    #    )
+    # ).scalars().all()
 
     # Decrypt credentials before sending to template
     for credential in credentials:
