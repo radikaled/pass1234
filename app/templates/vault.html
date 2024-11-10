@@ -79,6 +79,14 @@
                                 </button>
                             </form>
                             </div>
+                            <div class="control">
+                                <a href="{{ url_for('vault.share', credential_id=credential.id) }}" class="button is-link is-light">
+                                    <span class="icon">
+                                        <i class="fa-regular fa-handshake"></i>
+                                    </span>
+                                    <span>Share</span>
+                                </a>
+                            </div>
                         </div>
                     </td>
                 </tr>
