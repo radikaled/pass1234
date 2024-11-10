@@ -10,7 +10,7 @@ from app.util.cipher_utils import decrypt, encrypt
 from app.models.user import User
 from app.models.vault import Vault
 from app.extensions import db
-from app.main.forms import UserForm
+from app.main.forms import UserForm, LoginForm
 
 # Lambda shorthand for base64 encoding
 b64encode_str = lambda data: base64.b64encode(data).decode('utf-8')
@@ -28,6 +28,7 @@ def register():
     if form.validate_on_submit():
         # Process user data here (e.g., save to database)
         email = form.email.data
+        name = form.name.data
         password = form.password.data
 
         kc = KeyController(email, password)
@@ -35,6 +36,7 @@ def register():
         # Begin creating the new user
         new_user = User(
             email=email,
+            name=name,
             master_password_hash=(b64encode_str(kc.get_master_password_hash()))
         )
         db.session.add(new_user)
@@ -69,7 +71,7 @@ def register():
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    form = UserForm()
+    form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
