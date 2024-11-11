@@ -28,4 +28,4 @@ class SharedCredential(db.Model):
     )
 
     def __repr__(self):
-        return f'<Credential "{self.id}">'
+        return f'<SharedCredential "{self.id}">'
