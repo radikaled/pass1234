@@ -59,4 +59,4 @@ Some lessons learned from the excellent Bitwarden Security Whitepaper
 
 Password-based Database Encryption methodology by John Peñafiel
 
-- [https://penafieljlm.com/2016/12/30/password-based-database-encryption/#problem-changing-passwords](url) :blue_book:
+- [https://penafieljlm.com/2016/12/30/password-based-database-encryption/](url) :blue_book:
