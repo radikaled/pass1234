@@ -6,11 +6,14 @@ from sqlalchemy.exc import NoResultFound
 
 from app.vault import bp
 from app.util.cipher_utils import decrypt, encrypt, generate_hmac
+from app.util.rsa_utils import rsa_encrypt, rsa_decrypt
+from app.models.user import User
 from app.models.credential import Credential
 from app.models.sharedcredential import SharedCredential
 from app.extensions import db
 from app.vault.forms import CredentialCreateForm
 from app.vault.forms import CredentialUpdateForm
+from app.vault.forms import CredentialShareForm
 
 # Lambda shorthand for base64 encoding
 b64encode_str = lambda data: base64.b64encode(data).decode('utf-8')
@@ -127,3 +130,85 @@ def delete(credential_id):
     db.session.commit()
 
     return redirect(url_for('vault.index'))
+
+@bp.route('/vault/shared/')
+@login_required
+def shared_vault():
+    # Load credentials shared with the user
+    shared_credentials = db.session.execute(
+        db.select(SharedCredential).filter_by(subject_id=current_user.get_id())
+    ).scalars().all()
+
+    # Preemptively load the user's encrypted RSA private key
+    encrypted_rsa_private_key_pem = b64decode_str(
+        current_user.vaults[0].rsa_private_key
+    )
+    print(f'{encrypted_rsa_private_key_pem}')
+    
+    # Load initialization vector (IV)
+    rsa_private_key_iv = b64decode_str(
+        current_user.vaults[0].rsa_private_key_iv
+    )
+    
+    # Decrypt the user's RSA private key
+    rsa_private_key_pem = decrypt(
+      rsa_private_key_iv,
+      encrypted_rsa_private_key_pem,
+      session['_aes_key']
+    ) 
+    
+    # Finally decrypt the shared credential
+    for credential in shared_credentials:
+        credential.ciphertext = rsa_decrypt(
+           rsa_private_key_pem,
+           b64decode_str(credential.ciphertext)
+        ).decode()
+        
+    return render_template('shared_vault.html', credentials=shared_credentials)
+
+@bp.route('/vault/<int:credential_id>/share/', methods=['GET', 'POST'])
+@login_required
+def share(credential_id):
+    # Load the credential from db
+    credential = db.session.get(Credential, credential_id)
+
+    # Load users from db
+    users = db.session.execute(db.select(User)).scalars().all()
+
+    dynamic_choices = [(str(user.id), user.name) for user in users]
+    
+    form = CredentialShareForm()
+    
+    form.users.choices = dynamic_choices
+    
+    if form.validate_on_submit():
+        peer_id = form.users.data
+        peer = db.session.get(User, peer_id)
+        peer_rsa_public_key = b64decode_str(
+            peer.vaults[0].rsa_public_key
+        )
+        
+        # Decrypt the credential
+        shared_credential_plaintext = decrypt(
+            b64decode_str(credential.iv),
+            b64decode_str(credential.ciphertext),
+            session['_aes_key']
+        ).decode()
+        
+        # Encrypt the shared credential with the subject's RSA public-key
+        shared_credential_rsa = rsa_encrypt(
+            peer_rsa_public_key,
+            shared_credential_plaintext
+        )
+
+        shared_credential = SharedCredential(
+            credential_id=credential_id,
+            subject_id=peer_id,
+            ciphertext=b64encode_str(shared_credential_rsa)
+        )
+        db.session.add(shared_credential)
+        db.session.commit()
+        
+        return redirect(url_for('vault.index'))
+
+    return render_template('share.html', form=form, credential=credential)
