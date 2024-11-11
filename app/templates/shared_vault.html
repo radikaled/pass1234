@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="box">
+    <!-- Top-right "Add New Credential" link -->
+    <div class="level">
+        <div class="level-left">
+            <h2 class="title is-4">Shared Credentials</h2>
+        </div>
+    </div>
+        <table class="table is-fullwidth is-striped table is-hoverable has-text-left">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Website</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for credential in credentials %}
+                <tr>
+                    <td>{{ credential.credential.name }}</td>
+                    <td>{{ credential.credential.website }}</td>
+                    <td>{{ credential.credential.username }}</td>
+                    <td>
+                        <div class="field">
+                            <div class="control has-icons-right">
+                                <input class="input is-static" id="passwordField" type="password" value="{{ credential.ciphertext }}" readonly>
+                                <span class="icon is-small is-right" onclick="togglePasswordVisibility()">
+                                    <i id="toggleIcon" class="fas fa-eye is-clickable"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
