@@ -38,13 +38,15 @@ Export `SECRET_KEY` environment variable
 ```bash
 export SECRET_KEY=`python -c "import secrets; print(secrets.token_hex(24))"`
 ```
-Deploy the instance
+Deploy the instance in debug mode
+```bash
+flask --app app run --debug
+```
+Visit [http://127.0.0.1:5000](url) in your browser!
+
+## Production Deployment
 ```bash
 gunicorn -w 4 'app:create_app()'
-[2024-10-16 19:27:03 -0700] [812967] [INFO] Starting gunicorn 23.0.0
-[2024-10-16 19:27:03 -0700] [812967] [INFO] Listening at: http://127.0.0.1:8000 (812967)
-[2024-10-16 19:27:03 -0700] [812967] [INFO] Using worker: sync
-...
 ```
 Visit [http://127.0.0.1:8000](url) in your browser!
 
@@ -54,3 +56,7 @@ Some lessons learned from the excellent Bitwarden Security Whitepaper
 
 - [https://bitwarden.com/help/kdf-algorithms/](url) :blue_book:
 - [https://bitwarden.com/help/what-encryption-is-used/](url) :blue_book:
+
+Password-based Database Encryption methodology by John Peñafiel
+
+- [https://penafieljlm.com/2016/12/30/password-based-database-encryption/#problem-changing-passwords](url) :blue_book:
