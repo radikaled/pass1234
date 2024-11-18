@@ -45,8 +45,17 @@ def register():
         # Generate the user's protected symmetric key
         key_artifacts = kc.generate_protected_symmetric_key()
 
+        decrypted_key = kc.unlock_vault(
+            key_artifacts.iv,
+            key_artifacts.protected_key,
+            key_artifacts.hmac_signature
+        )
+
+        encryption_key = decrypted_key[:32]
+        hmac_key = decrypted_key[32:]
+
         # Generate the user's RSA public-key pair
-        rsa_artifacts = kc.generate_asymmetric_keypair()
+        rsa_artifacts = kc.generate_asymmetric_keypair(encryption_key, hmac_key)
 
         # Create the user's vault instance
         new_vault = Vault(

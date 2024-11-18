@@ -156,7 +156,12 @@ class KeyController:
         
         return key_artifacts
 
-    def generate_asymmetric_keypair(self) -> RSAKeyArtifacts:
+    def generate_asymmetric_keypair(
+        self, 
+        symmetric_key: bytes,
+        hmac_key: bytes,
+    ) -> RSAKeyArtifacts:
+        
         # Generate the RSA private key
         rsa_private_key = rsa.generate_private_key(
             public_exponent=65537,  # Sane default
@@ -183,12 +188,12 @@ class KeyController:
         # Encrypt the RSA private key with the symmetric key
         iv, encrypted_rsa_private_key = encrypt(
             rsa_private_key_pem,
-            self._derived_aes_key
+            symmetric_key 
         )
         
         # Generate the HMAC
         hmac_signature = generate_hmac(
-            self._derived_hmac_key,
+            hmac_key,
             iv + encrypted_rsa_private_key
         )
         
