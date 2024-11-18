@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <script>
+    function togglePasswordVisibility() {
+        const passwordField = document.getElementById('passwordField');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordField.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+    </script>
     <div class="box">
     <!-- Top-right "Add New Credential" link -->
     <div class="level">
