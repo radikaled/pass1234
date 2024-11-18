@@ -17,7 +17,10 @@ def rsa_encrypt(rsa_public_key_pem: bytes, plaintext: str) -> bytes:
     return ciphertext
 
 def rsa_decrypt(rsa_private_key_pem: bytes, ciphertext: bytes) -> bytes:
-    rsa_private_key = serialization.load_pem_private_key(rsa_private_key_pem)
+    rsa_private_key = serialization.load_pem_private_key(
+        rsa_private_key_pem,
+        password=None
+    )
     
     plaintext = rsa_private_key.decrypt(
         ciphertext,
