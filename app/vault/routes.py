@@ -143,7 +143,6 @@ def shared_vault():
     encrypted_rsa_private_key_pem = b64decode_str(
         current_user.vaults[0].rsa_private_key
     )
-    print(f'{encrypted_rsa_private_key_pem}')
     
     # Load initialization vector (IV)
     rsa_private_key_iv = b64decode_str(
