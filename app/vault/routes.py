@@ -74,6 +74,7 @@ def create():
         db.session.add(new_credential)
         db.session.commit()
 
+        flash('New credential created!')
         return redirect(url_for('vault.index'))
     return render_template('create.html', form=form)
 
@@ -119,6 +120,7 @@ def edit(credential_id):
         # Commit changes to the database
         db.session.commit()
         
+        flash('Credential updated!')
         return redirect(url_for('vault.index'))
     return render_template('edit.html', form=form)
 
@@ -129,6 +131,7 @@ def delete(credential_id):
     db.session.delete(credential)
     db.session.commit()
 
+    flash('Credential deleted!')
     return redirect(url_for('vault.index'))
 
 @bp.route('/vault/shared/')
@@ -208,6 +211,7 @@ def share(credential_id):
         db.session.add(shared_credential)
         db.session.commit()
         
+        flash('Credential shared!') 
         return redirect(url_for('vault.index'))
 
     return render_template('share.html', form=form, credential=credential)

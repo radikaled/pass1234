@@ -3,6 +3,17 @@
 {% block content %}
     <div class="box">
     <!-- Top-right "Add New Credential" link -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+            {% if category == 'error' %}
+                <div class="notification is-danger has-text-centered">{{ message }}</div>
+            {% else %}
+                <div class="notification is-success has-text-centered">{{ message }}</div>
+            {% endif %}
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
     <div class="level">
         <div class="level-left">
             <span class="icon-text has-text-weight-bold is-size-4">
