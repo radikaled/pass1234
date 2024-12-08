@@ -1,27 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <script>
-    function togglePasswordVisibility() {
-        const passwordField = document.getElementById('passwordField');
-        const toggleIcon = document.getElementById('toggleIcon');
-        
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-            toggleIcon.classList.remove("fa-eye");
-            toggleIcon.classList.add("fa-eye-slash");
-        } else {
-            passwordField.type = "password";
-            toggleIcon.classList.remove("fa-eye-slash");
-            toggleIcon.classList.add("fa-eye");
-        }
-    }
-    </script>
     <div class="box">
-    <!-- Top-right "Add New Credential" link -->
     <div class="level">
         <div class="level-left">
-            <h2 class="title is-4">Shared Credentials</h2>
+            <span class="icon-text has-text-weight-bold is-size-4">
+                <span class="icon">
+                    <i class="fa-regular fa-users"></i>
+                </span>
+                <span>Shared Credentials</span>
+            </span>
         </div>
     </div>
         <table class="table is-fullwidth is-striped table is-hoverable has-text-left">
@@ -42,9 +30,9 @@
                     <td>
                         <div class="field">
                             <div class="control has-icons-right">
-                                <input class="input is-static" id="passwordField" type="password" value="{{ credential.ciphertext }}" readonly>
-                                <span class="icon is-small is-right" onclick="togglePasswordVisibility()">
-                                    <i id="toggleIcon" class="fas fa-eye is-clickable"></i>
+                                <input class="input is-static" id="cred{{ credential.credential.id }}" type="password" value="{{ credential.ciphertext }}" readonly>
+                                <span class="icon is-small is-right" onclick="toggleVisibility('cred{{ credential.credential.id }}', 'eye{{ credential.credential.id }}')">
+                                    <i id="eye{{ credential.credential.id }}" class="fas fa-eye is-clickable"></i>
                                 </span>
                             </div>
                         </div>

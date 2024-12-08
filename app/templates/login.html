@@ -2,15 +2,17 @@
 
 {% block content %}
 <div class="column is-4 is-offset-4">
-    <h3 class="title">Login</h3>
+    <h3 class="title has-text-centered">Login</h3>
     <div class="box">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="notification is-danger">
           {% for category, message in messages %}
-            {{ message }}
+            {% if category == 'error' %}
+                <div class="notification is-danger has-text-centered">{{ message }}</div>
+            {% else %}
+                <div class="notification is-success has-text-centered">{{ message }}</div>
+            {% endif %}
           {% endfor %}
-        </div>
       {% endif %}
     {% endwith %}
         <form method="POST">

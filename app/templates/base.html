@@ -7,50 +7,80 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bulma/css/bulma.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
   </head>
 <body>
-    <section class="hero is-info is-fullheight">
-        <div class="hero-head">
-            <nav class="navbar">
-                <div class="container">
-                    <div id="navbarMenuHeroA" class="navbar-menu">
-                        <div class="navbar-end">
-                            <a href="{{ url_for('main.index') }}" class="navbar-item">
-                                Home
-                            </a>
-                            <!-- "My Vault" Dropdown with Sub-Nav Links -->
-                            <!-- Conditionally display "Add New Credential" only if the user is logged in -->
-                            {% if current_user.is_authenticated %}
-                            <div class="navbar-item has-dropdown is-hoverable">
-                                <a href="{{ url_for('vault.index') }}" class="navbar-link">
-                                    My Vault
-                                </a>
-                                <div class="navbar-dropdown">
-                                    <a href="{{ url_for('vault.shared_vault') }}" class="navbar-item">Shared Credentials</a>
-                                    <a href="{{ url_for('vault.create') }}" class="navbar-item">Add New Credential</a>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <a href="{{ url_for('main.login') }}" class="navbar-item">
-                                Login
-                            </a>
-                            <a href="{{ url_for('main.register') }}" class="navbar-item">
-                                Register 
-                            </a>
-                            <!-- Conditionally display "Logout" only if the user is logged in -->
-                            {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('main.logout') }}" class="navbar-item">
-                                Logout 
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
+<nav class="navbar is-warning">
+    <div class="navbar-brand">
+        <a class="navbar-item" href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='img/pass1234.png') }}" alt="Logo" />
+        </a>
+    </div>
+    <div id="navbarMenuHeroA" class="navbar-menu">
+        <div class="navbar-end">
+            <a href="{{ url_for('main.index') }}" class="navbar-item">
+                Home
+            </a>
+            <!-- Conditionally display certain navigation items only if the user is logged in -->
+            {% if current_user.is_authenticated %}
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a href="{{ url_for('vault.index') }}" class="navbar-link">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <i class="fa-regular fa-vault"></i>
+                        </span>
+                        <span>Vault</span>
+                    </span>
+                </a>
+                <div class="navbar-dropdown">
+                    <a href="{{ url_for('vault.shared_vault') }}" class="navbar-item">Shared Credentials</a>
+                    <a href="{{ url_for('vault.create') }}" class="navbar-item">Add New Credential</a>
                 </div>
-            </nav>
+            </div>
+            <div class="navbar-item">
+                <a class="button" href="{{ url_for('main.logout') }}">
+                    <span class="icon">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </span>
+                    <span>Logout</span>
+                </a>
+            </div>
+            <div class="navbar-item">
+                <span class="icon-text">
+                    <span class="icon">
+                        <i class="fa-regular fa-user"></i>
+                    </span>
+                    <span>{{ current_user.email }}</span>
+                </span>
+            </div>
+            {% else %}
+            <div class="navbar-item">
+                <a class="button" href="{{ url_for('main.login') }}">
+                    <span class="icon">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </span>
+                    <span>Login</span>
+                </a>
+            </div>
+            <div class="navbar-item">
+                <a class="button is-primary is-soft" href="{{ url_for('main.register') }}">
+                    <span class="icon">
+                        <i class="fa-solid fa-address-card"></i>
+                    </span>
+                    <span>Create Account</span>
+                </a>
+            </div>
+            {% endif %}
         </div>
+    </div>
+</nav>
+<section class="hero is-light is-fullheight">
+        <div class="hero-head">
         <div class="hero-body">
-            <div class="container has-text-centered">
-                <img style="width:200px;height:auto;" src="{{ url_for('static', filename='img/pass1234.png') }}" alt="Logo" />
+            <div class="container">
+                <div class="block has-text-centered">
+                    <img style="height:160px;width:auto;" src="{{ url_for('static', filename='img/pass1234.png') }}" alt="Logo" />
+                </div>
                {% block content %}
                {% endblock %}
             </div>
