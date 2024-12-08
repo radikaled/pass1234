@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from app.extensions import db
+from app.extensions import migrate 
 from app.extensions import lm
 from app.models.user import User
 
@@ -11,6 +12,7 @@ def create_app(config_class=Config):
 
     # Initialize Flask extensions here
     db.init_app(app)    # Database
+    migrate.init_app(app, db)   # Database migrations
 
     lm.login_view = 'main.login'
     lm.init_app(app)
@@ -24,8 +26,8 @@ def create_app(config_class=Config):
 
     # Create tables that do not already exist in the database
     # Effectively database init
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #    db.create_all()
 
     @lm.user_loader
     def load_user(user_id):
