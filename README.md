@@ -34,6 +34,18 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+Initialize database schema migration support
+```bash
+flask db init
+```
+Stage database schema migrations
+```bash
+flask db migrate -m "initial migration"
+```
+Perform database schema upgrade (effectively initializes the database)
+```bash
+flask db upgrade
+```
 Export `SECRET_KEY` environment variable
 ```bash
 export SECRET_KEY=`python -c "import secrets; print(secrets.token_hex(24))"`
@@ -45,10 +57,17 @@ flask --app app run --debug
 Visit [http://127.0.0.1:5000](url) in your browser!
 
 ## Production Deployment
+Generate a self-signed SSL certificate.
 ```bash
-gunicorn -w 4 'app:create_app()'
+openssl req -x509 -nodes -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" \
+    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 ```
-Visit [http://127.0.0.1:8000](url) in your browser!
+Deploy the instance in production mode.
+```bash
+gunicorn --certfile=cert.pem --keyfile=key.pem -b 0.0.0.0:8443 -w 1 'app:create_app()'
+```
+Visit [http://127.0.0.1:8443](url) in your browser!
 
 ## Appendix
 
