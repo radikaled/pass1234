@@ -6,10 +6,15 @@
     <div class="box">
         <form method="POST">
             {{ form.csrf_token }}
-            <div class="field">
-                <label class="label">Credential Name</label>
-                <span>{{ credential.name }}</span>
-            </div>
+            <article class="message is-danger">
+                <div class="message-header">
+                    <p>Credential Name: <em>"{{ credential.name }}"</em></p>
+                </div>
+                <div class="message-body">
+                    <strong>Be mindful of who you are sharing with!</strong><br>
+                   Please select a user below to share this credential with. 
+                </div>
+            </article>
             <div class="field">
                 <label class="label">Username</label>
                 <div class="control has-icons-left">
@@ -21,7 +26,7 @@
                     </span>
                 </div>
             </div>
-            <button class="button is-block is-info is-large is-fullwidth" value="Share">Share</button>
+            <button class="button is-block is-danger is-large is-fullwidth" value="Share">Share</button>
         </form>
     </div>
 </div>
