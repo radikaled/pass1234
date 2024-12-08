@@ -29,7 +29,8 @@ class Credential(db.Model):
     )
     vault: Mapped["Vault"] = relationship(back_populates="credentials")
     shared_credentials: Mapped[List["SharedCredential"]] = relationship(
-        back_populates="credential"
+        back_populates="credential",
+        cascade="all, delete"
     )
 
     def __repr__(self):
