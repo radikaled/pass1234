@@ -75,7 +75,8 @@ def register():
         # New user creation complete
         db.session.commit()
 
-        return redirect(url_for('main.success'))
+        flash('Account created successfully! Please login.')
+        return redirect(url_for('main.login'))
     return render_template('register.html', form=form)
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -115,9 +116,9 @@ def login():
             # Login
             login_user(user)
             
-            return redirect(url_for('main.profile'))
+            return redirect(url_for('vault.index'))
         else:
-            flash('Invalid username or password.', 'danger')
+            flash('Invalid username or password.', 'error')
             return redirect(url_for('main.login'))
     return render_template('login.html', form=form)
 
@@ -125,14 +126,10 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))
+    flash('You have been logged out sucessfully.')
+    return redirect(url_for('main.login'))
 
 @bp.route('/profile')
 @login_required
 def profile():
-    print(f'{session}')
     return render_template('profile.html', name=current_user.email)
-
-@bp.route('/success')
-def success():
-    return "User created successfully!"
