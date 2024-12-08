@@ -168,4 +168,7 @@ cython_debug/
 #.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/flask
+
+# Custom exclusions 12/08/24
 app.db
+migrations/
