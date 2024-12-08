@@ -174,7 +174,7 @@ def share(credential_id):
     # Load users from db
     users = db.session.execute(db.select(User)).scalars().all()
 
-    dynamic_choices = [(str(user.id), user.name) for user in users]
+    dynamic_choices = [(str(user.id), user.email) for user in users]
     
     form = CredentialShareForm()
     
